@@ -13,6 +13,7 @@ module Fedex
         @package_id   = options[:package_id]   || options.delete(:tracking_number)
         @package_type = options[:package_type] || "TRACKING_NUMBER_OR_DOORTAG"
         @credentials  = credentials
+        @account      = options[:account]
 
         # Optional
         @include_detailed_scans = options[:include_detailed_scans] || true
@@ -64,6 +65,7 @@ module Fedex
             add_client_detail(xml)
             add_version(xml)
             add_package_identifier(xml)
+            xml.ShipmentAccountNumber          @account      if @account
             xml.TrackingNumberUniqueIdentifier @uuid         if @uuid
             xml.IncludeDetailedScans           @include_detailed_scans
             xml.PagingToken                    @paging_token if @paging_token
