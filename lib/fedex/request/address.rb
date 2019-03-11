@@ -20,14 +20,24 @@ module Fedex
         if success?(response)
           options = response[:address_validation_reply][:address_results][:proposed_address_details]
           options = options.first if options.is_a? Array
-          Fedex::Address.new(options)
+          OpenStruct.new(
+            address: Fedex::Address.new(options),
+            request_xml: build_xml,
+            response_xml: api_response.to_xml,
+            error: nil,
+          )
         else
           error_message = if response[:address_validation_reply]
             [response[:address_validation_reply][:notifications]].flatten.first[:message]
           else
             "#{api_response["Fault"]["detail"]["fault"]["reason"]}\n--#{api_response["Fault"]["detail"]["fault"]["details"]["ValidationFailureDetail"]["message"].join("\n--")}"
           end rescue $1
-          raise RateError, error_message
+          OpenStruct.new(
+            address: nil,
+            request_xml: build_xml,
+            response_xml: api_response.to_xml,
+            error: error_message,
+          )
         end
       end
 
